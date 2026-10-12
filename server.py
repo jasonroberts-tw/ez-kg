@@ -32,7 +32,7 @@ Cite doc titles and evidence quotes when reporting findings.""")
 
 @mcp.tool()
 def ingest(path: str, kind: str = "document") -> list[dict]:
-    """Ingest a text file or every text file under a folder (.txt .md .vtt .srt .csv .json .html ...).
+    """Ingest a file or every supported file under a folder (.txt .md .vtt .srt .csv .json .html .docx ...).
     kind: free label, e.g. 'transcript', 'report', 'email'."""
     return g.ingest_path(path, kind)
 

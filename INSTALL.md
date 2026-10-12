@@ -36,4 +36,4 @@ Files, all in the repo directory (the folder holding this file):
 
 - **Server fails to start in a GUI client:** a relative `uv` or a relative repo path is the usual cause. Swap in the absolute paths from step 1.
 - **HTTP client can't connect:** the `--http` server must already be running. Check with `curl -s http://127.0.0.1:8765/mcp`; any response means it's up.
-- **Ingest scope:** only text formats are read (.txt .md .vtt .srt .csv .json .html .rst .log). Convert PDF and .docx files to text first, or pass the text to the `ingest_text` tool.
+- **Ingest scope:** text formats (.txt .md .vtt .srt .csv .json .html .rst .log) and .docx are read. Convert PDF files to text first, or pass the text to the `ingest_text` tool.

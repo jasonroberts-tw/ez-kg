@@ -7,11 +7,14 @@ import hashlib
 import re
 import sqlite3
 import threading
+import xml.etree.ElementTree as ET
+import zipfile
 from collections import deque
 from contextlib import contextmanager
 from pathlib import Path
 
-TEXT_EXTS = {".txt", ".md", ".markdown", ".vtt", ".srt", ".csv", ".json", ".html", ".rst", ".log"}
+TEXT_EXTS = {".txt", ".md", ".markdown", ".vtt", ".srt", ".csv", ".json", ".html", ".rst", ".log", ".docx"}
+W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 
 SCHEMA = """
 create table if not exists docs(
@@ -36,6 +39,24 @@ create index if not exists rel_src on relations(src);
 create index if not exists rel_dst on relations(dst);
 create index if not exists men_doc on mentions(doc_id);
 """
+
+
+def docx_text(path):
+    """Body text of a .docx (a zip of XML). Headers, footers, comments and deleted revisions are skipped."""
+    out = []
+    with zipfile.ZipFile(path) as z, z.open("word/document.xml") as f:
+        for _, el in ET.iterparse(f):
+            if el.tag == W + "t":
+                out.append(el.text or "")
+            elif el.tag == W + "tab" and el.get(W + "val") is None:  # a run tab, not a tab-stop definition
+                out.append("\t")
+            elif el.tag in (W + "p", W + "br", W + "cr"):
+                out.append("\n")
+    return "".join(out)
+
+
+def read_file(f):
+    return docx_text(f) if f.suffix.lower() == ".docx" else f.read_text(errors="replace")
 
 
 def chunk(text, size=1500):
@@ -105,8 +126,9 @@ class Graph:
         if not p.exists():
             raise FileNotFoundError(p)
         files = [p] if p.is_file() else sorted(
-            f for f in p.rglob("*") if f.is_file() and f.suffix.lower() in TEXT_EXTS)
-        return [{"file": str(f), **self.add_document(f.stem, f.read_text(errors="replace"), kind, str(f))}
+            f for f in p.rglob("*")
+            if f.is_file() and f.suffix.lower() in TEXT_EXTS and not f.name.startswith("~$"))  # skip Word lock files
+        return [{"file": str(f), **self.add_document(f.stem, read_file(f), kind, str(f))}
                 for f in files]
 
     def documents(self):
@@ -401,4 +423,13 @@ if __name__ == "__main__":  # self-check
         g.add_facts(other, relations=[{"source": "Carol", "relation": "joins", "target": "Atlas"}])
         assert g.delete_document(other)["deleted"] and not g.search_text("Carol")
         assert g.query("select count(*) n from relations")[0]["n"] == 0
+        with zipfile.ZipFile(Path(d) / "memo.docx", "w") as z:
+            z.writestr("word/document.xml", f'<w:document xmlns:w="{W[1:-1]}"><w:body>'
+                       '<w:p><w:pPr><w:tabs><w:tab w:val="left" w:pos="720"/></w:tabs></w:pPr>'
+                       '<w:r><w:t>Dana</w:t><w:tab/><w:t xml:space="preserve">leads </w:t></w:r><w:r><w:t>Orion</w:t></w:r></w:p>'
+                       '<w:p><w:r><w:delText>gone</w:delText><w:t>Done.</w:t></w:r></w:p></w:body></w:document>')
+        (Path(d) / "~$memo.docx").write_bytes(b"lock")
+        assert docx_text(Path(d) / "memo.docx") == "Dana\tleads Orion\nDone.\n"
+        assert [r["file"] for r in g.ingest_path(d)] == [str(Path(d).resolve() / "memo.docx")]
+        assert g.search_text("Orion")
     print("kg.py self-check ok")
