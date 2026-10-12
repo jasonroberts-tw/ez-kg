@@ -1,7 +1,7 @@
 """Lightweight knowledge graph over SQLite + FTS5.
 
 Documents are split into chunks (full-text indexed). Entities, relations and
-mentions are written by the caller (Claude) with provenance back to a doc/chunk.
+mentions are written by the caller (an agent) with provenance back to a doc/chunk.
 """
 import hashlib
 import re

@@ -1,7 +1,7 @@
 # ez-kg
 
-Local knowledge graph (SQLite + FTS5) with an MCP server, for cross-document/transcript analysis with Claude.
-Claude does the extraction: it reads chunks and writes entities/relations back with doc/chunk/quote provenance.
+Local knowledge graph (SQLite + FTS5) with an MCP server, for cross-document/transcript analysis with any MCP-capable agent.
+The agent does the extraction: it reads chunks and writes entities/relations back with doc/chunk/quote provenance.
 
 - `kg.py`: graph core, stdlib only. `python3 kg.py` runs the self-check.
 - `server.py`: MCP wrapper (`mcp` 2.x, via uv inline deps). DB defaults to `./kg.db`; override with `KG_DB`.
@@ -10,26 +10,16 @@ Claude does the extraction: it reads chunks and writes entities/relations back w
 
 To have an agent do it: give it [INSTALL.md](INSTALL.md).
 
-Claude Code (stdio):
-
-```bash
-claude mcp add kg -s user -- uv run --script /Users/jasonroberts/git/ez-kg/server.py
-```
-
-Claude Desktop (`claude_desktop_config.json`):
+stdio: register this command with your MCP client (most accept this JSON shape; use absolute paths):
 
 ```json
-{ "mcpServers": { "kg": { "command": "uv", "args": ["run", "--script", "/Users/jasonroberts/git/ez-kg/server.py"] } } }
+{ "mcpServers": { "kg": { "command": "uv", "args": ["run", "--script", "/path/to/ez-kg/server.py"] } } }
 ```
 
-Or as a persistent local server shared by several clients (`http://127.0.0.1:8765/mcp`):
+Or as a persistent local server shared by several clients, then register `http://127.0.0.1:8765/mcp` as a streamable HTTP server:
 
 ```bash
-uv run --script /Users/jasonroberts/git/ez-kg/server.py --http
-```
-
-```bash
-claude mcp add kg -s user --transport http http://127.0.0.1:8765/mcp
+uv run --script /path/to/ez-kg/server.py --http
 ```
 
 ## Use
