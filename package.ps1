@@ -1,5 +1,6 @@
-# Zips the .py and .md files next to this script into ez-kg.zip.
+# Zips the .py and .md files next to this script, except CLAUDE.md, into ez-kg.zip.
 $ErrorActionPreference = 'Stop'
 $zip = Join-Path $PSScriptRoot 'ez-kg.zip'
-Compress-Archive -Path (Join-Path $PSScriptRoot '*.py'), (Join-Path $PSScriptRoot '*.md') -DestinationPath $zip -Force
+Get-ChildItem (Join-Path $PSScriptRoot '*') -Include *.py, *.md -Exclude CLAUDE.md |
+    Compress-Archive -DestinationPath $zip -Force
 Write-Host "Wrote $zip"
