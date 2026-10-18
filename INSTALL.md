@@ -7,6 +7,7 @@ Files, all in the repo directory (the folder holding this file):
 - `kg.py`: the graph core, standard library only.
 - `server.py`: the MCP server. It declares its `mcp` dependency inline, so `uv run --script` installs it on first launch.
 - `kg.db`: the graph data, created on first run next to `server.py`. Set the `KG_DB` environment variable to keep it somewhere else.
+- `skills/`: two Agent Skills for the agent using the graph. `kg-ingest` covers loading and extracting documents, and `kg-query` covers answering with citations.
 
 ## Steps
 
@@ -27,9 +28,11 @@ Files, all in the repo directory (the folder holding this file):
 
    GUI clients usually load MCP config only at startup, so the user may need to fully quit and reopen them.
 
-5. **Verify.** Done when each client lists `kg` as connected (its MCP list command or settings view) or its tools appear in a new session. On the first launch, `uv` downloads the `mcp` package, so a slow first connect is normal.
+5. **Install the skills** in each chosen client that supports Agent Skills (folders holding a `SKILL.md`). Copy `REPO/skills/kg-ingest` and `REPO/skills/kg-query` into the client's user-level skills directory. For Claude Code, that directory is `$CLAUDE_CONFIG_DIR/skills/`, or `~/.claude/skills/` when the variable is unset. Skip a client with no skill support, because the server's own instructions still cover the basic workflow.
 
-6. **Report** the paths used, the clients connected, where `kg.db` lives, and one example prompt to try:
+6. **Verify.** Done when each client lists `kg` as connected (its MCP list command or settings view) or its tools appear in a new session. On the first launch, `uv` downloads the `mcp` package, so a slow first connect is normal. Each client from step 5 also lists both skills.
+
+7. **Report** the paths used, the clients connected, which clients got the skills, where `kg.db` lives, and one example prompt to try:
    > Ingest ~/path/to/transcripts as transcripts, extract people, projects, decisions and risks, then tell me which risks come up in more than one meeting and who raised them.
 
 ## Troubleshooting
