@@ -8,6 +8,7 @@ The connected agent does the extraction, so this repo holds only storage, search
 - `kg.py` holds all logic in the `Graph` class.
 - `server.py` exposes each `Graph` method as one MCP tool and keeps no logic of its own.
 - The tool is deliberately two files. Grow them before adding a module.
+- `skills/` holds two Agent Skills that ship to users: `kg-ingest` and `kg-query`. They contain no code.
 
 ## Rules
 
@@ -35,13 +36,15 @@ Three audiences read this repo:
 | File | Reader | Update when |
 |---|---|---|
 | `server.py` `instructions=` and tool docstrings | the agent using the graph at runtime | tools, tool behaviour or tables change |
+| `skills/*/SKILL.md` | the agent using the graph at runtime | tools, tool behaviour, result limits or tables change |
 | `INSTALL.md` | an agent installing the tool | setup, config or supported formats change |
 | `README.md` | a human | tools or hook-up steps change |
 
 The table list in `instructions=` must match `SCHEMA`, because agents write `query` SQL from that list.
+The SQL examples in the skills must also run against `SCHEMA`.
 A new ingest format touches `TEXT_EXTS`, `read_file()`, the `ingest` docstring and the ingest scope line in `INSTALL.md`.
 
 ## Release
 
 Push a `v*` tag. CI then runs `package.ps1` and attaches `ez-kg.zip` to a GitHub release.
-The zip holds every top-level `.py` and `.md` file except this one, so a new top-level file of either type ships to users.
+The zip holds every top-level `.py` and `.md` file except this one, plus the `skills/` folder. A new top-level file of either type ships to users.

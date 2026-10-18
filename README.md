@@ -22,6 +22,9 @@ Or as a persistent local server shared by several clients, then register `http:/
 uv run --script /path/to/ez-kg/server.py --http
 ```
 
+Skills: copy `skills/kg-ingest` and `skills/kg-query` into your agent's skills folder (`~/.claude/skills/` for Claude Code).
+They teach the agent to ingest in batches with citable quotes, and to answer with cited sources.
+
 ## Use
 
 > Ingest ~/notes/transcripts as transcripts, extract people, projects, decisions and risks from each, then tell me which risks come up in more than one meeting and who raised them.
